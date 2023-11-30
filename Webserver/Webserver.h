@@ -16,9 +16,11 @@ private:
   std::string getHeader(std::string content_type, int body_len, int status_code);
   std::string getContentType(std::string path);
   std::string loadFile(std::string path);
+  
 
 public:
   Webserver(int port, std::string directory);
+  void shutdownServer();
   void init();
   ~Webserver();
 };

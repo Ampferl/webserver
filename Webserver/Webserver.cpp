@@ -5,15 +5,38 @@
 #include <string>
 #include <sys/socket.h>
 #include <fstream>
+#include <csignal>
+
+Webserver* webServerInstance = nullptr;
+
+// Signal handler for CTRL+C
+void signalHandler(int signum) {
+    if (webServerInstance != nullptr) {
+        std::cout << "[-] Shutdown Webserver" << std::endl << std::endl;;
+        webServerInstance->shutdownServer();
+    }
+    exit(signum);
+}
+
+// Implement the shutdownServer method
+void Webserver::shutdownServer() {
+    shutdown(server_fd, SHUT_RDWR);
+}
 
 Webserver::Webserver(int port, std::string directory){
   dir = directory;
+
+  
 
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port = htons(port);
 
   server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+  webServerInstance = this;
+
+  signal(SIGINT, signalHandler);
 
   if(server_fd < 0){
     std::cerr << "[-] Socket failed" << std::endl;
@@ -72,7 +95,7 @@ void Webserver::init(){
 
 Webserver::~Webserver(){
   std::cout << "[-] Shutdown Webserver" << std::endl << std::endl;;
-  shutdown(server_fd, SHUT_RDWR);
+  webServerInstance->shutdownServer();
 }
 
 
